@@ -1,0 +1,51 @@
+.storybook-button {
+  display: inline-block;
+  cursor: pointer;
+  border: 0;
+  border-radius: var(--button-border-radius, 64px);
+  font-weight: var(--button-desktop-font-weight, 500);
+  line-height: var(--button-desktop-font-line-height, normal);
+  font-size: var(--button-desktop-font-size, 16px);
+  letter-spacing: var(--button-desktop-font-letter-spacing, normal);
+  font-family: var(--font-family, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif);
+  transition: all 0.2s ease-in-out;
+}
+
+.storybook-button--primary {
+  color: var(--button-primary-fg-color, white);
+  background-color: var(--button-primary-bg-color, #000);
+  border: var(--button-border-width, 1px) solid var(--button-primary-border-color, transparent);
+}
+
+.storybook-button--primary:hover {
+  background-color: var(--button-primary-hover-bg-color, #333);
+  border-color: var(--button-primary-hover-border-color, #333);
+  box-shadow: var(--button-hover-shadow, none);
+}
+
+.storybook-button--secondary {
+  color: var(--button-secondary-fg-color, #333);
+  background-color: var(--button-secondary-bg-color, transparent);
+  border: var(--button-border-width, 1px) solid var(--button-secondary-border-color, rgba(0, 0, 0, 0.15));
+}
+
+.storybook-button--secondary:hover {
+  background-color: var(--button-secondary-hover-bg-color, rgba(0, 0, 0, 0.05));
+  border-color: var(--button-secondary-hover-border-color, rgba(0, 0, 0, 0.2));
+  box-shadow: var(--button-hover-shadow, none);
+}
+
+.storybook-button--small {
+  font-size: var(--button-mobile-font-size, 14px);
+  padding: var(--button-compact-padding, 7px 15px);
+}
+
+.storybook-button--medium {
+  font-size: var(--button-desktop-font-size, 16px);
+  padding: var(--button-regular-padding, 11px 31px);
+}
+
+.storybook-button:active {
+  transform: translateY(1px);
+  filter: brightness(0.9);
+}
