@@ -210,6 +210,11 @@
       "type": "boxShadow",
       "description": ""
     },
+    "--button-hover-translate-y": {
+      "value": "-2px",
+      "type": "spacing",
+      "description": "Vertical hover movement (negative lifts the button upward)."
+    },
     "--button-active-shadow": {
       "value": "{Root.--box-shadow-m}",
       "type": "boxShadow",

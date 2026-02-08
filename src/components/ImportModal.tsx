@@ -2,9 +2,8 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Upload, FolderInput } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTokenStore } from '@/store/useTokenStore';
-import { resolveTokens } from '@/utils/token-engine';
 import { mergeTokenFiles } from '@/utils/file-merge';
 
 interface ImportModalProps {
@@ -13,23 +12,27 @@ interface ImportModalProps {
 }
 
 export function ImportModal({ open, onOpenChange }: ImportModalProps) {
-    const { setRawTokens, rawTokens, setResolvedTokens } = useTokenStore();
+    const { rawTokens, applyOverrideTokens, isLoadingTokens } = useTokenStore();
     const [input, setInput] = useState(rawTokens);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        setInput(rawTokens);
+    }, [rawTokens]);
 
     const processTokens = (tokens: any) => {
         const jsonString = JSON.stringify(tokens, null, 2);
         setInput(jsonString);
-        setRawTokens(jsonString);
         setError(null);
 
-        resolveTokens(tokens).then((resolved) => {
-            setResolvedTokens(resolved);
-            onOpenChange(false); // Close modal on success
-        }).catch(err => {
-            console.error(err);
-            setError('Failed to resolve tokens');
-        });
+        applyOverrideTokens(tokens)
+            .then(() => {
+                onOpenChange(false); // Close modal on success
+            })
+            .catch((err) => {
+                console.error(err);
+                setError('Failed to apply token overrides');
+            });
     };
 
     const handleApply = () => {
@@ -110,9 +113,10 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
 
                     <button
                         onClick={handleApply}
-                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                        disabled={isLoadingTokens}
+                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                        Load JSON
+                        {isLoadingTokens ? 'Applying...' : 'Load JSON'}
                     </button>
                 </Dialog.Content>
             </Dialog.Portal>

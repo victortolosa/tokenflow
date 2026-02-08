@@ -22,7 +22,7 @@ export const Palettes: StoryObj = {
         useEffect(() => {
             async function loadTokens() {
                 // Fetch Global tokens (Palettes are usually here)
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
 
                 // Flatten and filter for colors
                 // We know Global.json has a "Palette" group at the top level
@@ -62,8 +62,8 @@ export const SemanticColors: StoryObj = {
         useEffect(() => {
             async function loadTokens() {
                 // We need both Global (for references) and Primary (for semantic definitions)
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
-                const primaryTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Primary.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
+                const primaryTokens = await fetchTokens('/tokens/Snap%20Motif/Primary.json');
 
                 // Combine for resolution context
                 const allTokens = { ...globalTokens, ...primaryTokens, Palette: globalTokens.Palette };
@@ -86,7 +86,7 @@ export const SemanticColors: StoryObj = {
             <div>
                 <h2 className="text-2xl font-bold mb-4">Semantic Colors (Primary Theme)</h2>
                 <p className="mb-8 text-gray-600">
-                    Colors assigned to specific UI roles. Showing "Primary" theme.
+                    Colors assigned to specific UI roles. Showing "Primary" mode.
                 </p>
                 <TokenGrid tokens={tokens} type="color" />
             </div>

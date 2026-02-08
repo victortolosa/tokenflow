@@ -3,10 +3,8 @@ import React from 'react';
 import './button.css';
 
 export interface ButtonProps {
-  /** Is this the principal call to action on the page? */
-  primary?: boolean;
-  /** What background color to use */
-  backgroundColor?: string;
+  /** Visual variant for the button */
+  variant?: 'primary' | 'secondary' | 'flat';
   /** How large should the button be? */
   size?: 'small' | 'medium' | 'large';
   /** Button contents */
@@ -17,13 +15,12 @@ export interface ButtonProps {
 
 /** Primary UI component for user interaction */
 export const Button = ({
-  primary = false,
+  variant,
   size = 'medium',
-  backgroundColor,
   label,
   ...props
 }: ButtonProps) => {
-  const mode = primary ? 'storybook-button--primary' : 'storybook-button--secondary';
+  const mode = `storybook-button--${variant ?? 'secondary'}`;
 
   // Convert size prop to the corresponding token suffix if needed, 
   // currently we'll just use the class mapping to tokens in CSS
@@ -32,7 +29,6 @@ export const Button = ({
     <button
       type="button"
       className={['storybook-button', `storybook-button--${size}`, mode].join(' ')}
-      style={backgroundColor ? { backgroundColor } : undefined}
       {...props}
     >
       {label}

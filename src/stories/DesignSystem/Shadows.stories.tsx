@@ -24,8 +24,8 @@ export const Default: StoryObj = {
                 // Shadows are usually in Primary for semantic usage, or Global for base
                 // In the sample file, it seems they were in Primary under Root.--box-shadow-xs
 
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
-                const primaryTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Primary.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
+                const primaryTokens = await fetchTokens('/tokens/Snap%20Motif/Primary.json');
 
                 // Combine
                 const allTokens = { ...globalTokens, ...primaryTokens };

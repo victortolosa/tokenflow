@@ -21,7 +21,7 @@ export const Radius: StoryObj = {
 
         useEffect(() => {
             async function loadTokens() {
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
                 const radius = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'borderRadius');
                 setTokens(radius);
                 setLoading(false);
@@ -47,7 +47,7 @@ export const Width: StoryObj = {
 
         useEffect(() => {
             async function loadTokens() {
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
                 const width = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'borderWidth');
                 setTokens(width);
                 setLoading(false);

@@ -1,26 +1,25 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useTokenStore } from '@/store/useTokenStore';
-import { resolveTokens } from '@/utils/token-engine';
 import { mergeTokenFiles } from '@/utils/file-merge';
 import { Upload, FolderInput } from 'lucide-react';
 
 export function TokenUploader() {
-    const { setRawTokens, rawTokens, setResolvedTokens } = useTokenStore();
+    const { rawTokens, applyOverrideTokens, isLoadingTokens } = useTokenStore();
     const [input, setInput] = useState(rawTokens);
     const [error, setError] = useState<string | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
+
+    useEffect(() => {
+        setInput(rawTokens);
+    }, [rawTokens]);
 
     const processTokens = (tokens: any) => {
         const jsonString = JSON.stringify(tokens, null, 2);
         setInput(jsonString);
-        setRawTokens(jsonString);
         setError(null);
 
-        resolveTokens(tokens).then((resolved) => {
-            setResolvedTokens(resolved);
-        }).catch(err => {
+        applyOverrideTokens(tokens).catch(err => {
             console.error(err);
-            setError('Failed to resolve tokens');
+            setError('Failed to apply token overrides');
         });
     };
 
@@ -88,9 +87,10 @@ export function TokenUploader() {
 
             <button
                 onClick={handleApply}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+                disabled={isLoadingTokens}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
             >
-                Load JSON Text
+                {isLoadingTokens ? 'Applying...' : 'Load JSON Text'}
             </button>
         </div>
     );

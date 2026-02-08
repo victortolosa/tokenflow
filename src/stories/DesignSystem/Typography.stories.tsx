@@ -21,7 +21,7 @@ export const FontSizes: StoryObj = {
 
         useEffect(() => {
             async function loadTokens() {
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
                 // Flatten and filter for fontSizes
                 const fontSizes = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'fontSizes');
                 setTokens(fontSizes);
@@ -48,7 +48,7 @@ export const FontWeights: StoryObj = {
 
         useEffect(() => {
             async function loadTokens() {
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
                 const weights = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'fontWeights');
                 setTokens(weights);
                 setLoading(false);
@@ -74,7 +74,7 @@ export const FontFamilies: StoryObj = {
 
         useEffect(() => {
             async function loadTokens() {
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
                 const families = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'fontFamilies');
                 setTokens(families);
                 setLoading(false);

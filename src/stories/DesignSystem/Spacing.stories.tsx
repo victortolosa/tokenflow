@@ -21,7 +21,7 @@ export const Default: StoryObj = {
 
         useEffect(() => {
             async function loadTokens() {
-                const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
+                const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
                 // Flatten and filter for spacing
                 const spacing = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'spacing');
                 setTokens(spacing);
