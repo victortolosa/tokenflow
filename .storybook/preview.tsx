@@ -1,66 +1,46 @@
 
-import type { Preview, ReactRenderer, Decorator } from '@storybook/react';
+import type { Preview, Decorator } from '@storybook/react';
 import React, { useEffect, useState } from 'react';
 import { fetchTokens, flattenTokens, deepMerge } from '../src/utils/token-utils';
+import '../src/app/fonts.css';
 
 const TokenReceiver: Decorator = (Story, context) => {
-  const [style, setStyle] = useState<React.CSSProperties>({});
+  const [, setLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Get selected theme from globals (default to 'primary')
   const theme = context.globals.theme || 'primary';
 
   useEffect(() => {
     async function loadTokens() {
       setLoading(true);
       try {
-        // 1. Fetch all layers
+        // 1. Fetch base layers
         const globalTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Global.json');
         const primaryTokens = await fetchTokens('/sample-json/tokens/Snap%20Motif/Primary.json');
 
-        // 2. Base construction: Merge Global and Primary (Primary is the base mode)
-        // Use deepMerge to ensure we don't lose groups (like Root) during construction
+        // 2. Merge Global + Primary (base mode)
         let allTokens = deepMerge(globalTokens, primaryTokens);
 
-        // 3. If a specific theme override exists, merge it ON TOP
+        // 3. If a theme override exists, merge it on top
         if (theme !== 'primary') {
           const filename = theme.charAt(0).toUpperCase() + theme.slice(1);
           const themeTokens = await fetchTokens(`/sample-json/tokens/Snap%20Motif/${filename}.json`);
           allTokens = deepMerge(allTokens, themeTokens);
         }
 
-        // DEBUG: Check if key groups exist after merge
-        console.log('[DEBUG] allTokens top-level keys:', Object.keys(allTokens));
-        console.log('[DEBUG] Neutral exists?', !!allTokens.Neutral);
-        console.log('[DEBUG] Palette exists?', !!allTokens.Palette);
-        if (allTokens.Neutral) {
-          console.log('[DEBUG] Neutral keys (first 5):', Object.keys(allTokens.Neutral).slice(0, 5));
-        }
-
-        // 4. Flatten and apply to :root (document.documentElement)
+        // 4. Flatten and apply to :root
         const flatTokens = flattenTokens(allTokens, allTokens);
 
         flatTokens.forEach((t) => {
           const parts = t.name.split('.');
           const varName = parts[parts.length - 1];
           if (varName.startsWith('--')) {
-            // Debug specific tokens
-            if (varName === '--button-primary-bg-color') {
-              console.log('[DEBUG] --button-primary-bg-color:', {
-                originalValue: t.originalValue,
-                resolvedValue: t.value,
-                type: typeof t.value
-              });
-            }
             document.documentElement.style.setProperty(varName, String(t.value));
           }
         });
 
-        // Log for debugging (invisible to user unless they open console)
-        console.log(`[TokenReceiver] Theme "${theme}" loaded. ${flatTokens.length} tokens applied to :root`);
-
-        // Signal loading complete
-        setStyle({ loaded: true } as any);
+        console.log(`[TokenReceiver] Theme "${theme}" loaded. ${flatTokens.length} tokens applied.`);
+        setLoaded(true);
       } catch (e) {
         console.error("Failed to load tokens", e);
       } finally {
@@ -85,14 +65,13 @@ const TokenReceiver: Decorator = (Story, context) => {
     return <div style={{ minHeight: '100vh', padding: '1rem', opacity: 0.5 }}><Story /></div>;
   }
 
-  // Ensure background color is applied to the wrapper using the resolved token variable
   const wrapperStyle: React.CSSProperties = {
-    ...style,
     backgroundColor: 'var(--bg-color)',
-    color: 'var(--fg-color, #000)', // Added fallback for safety
-    minHeight: '100vh',
-    padding: '1rem',
+    color: 'var(--fg-color, #000)',
+    minHeight: context.viewMode === 'docs' ? 'auto' : '100vh',
+    padding: context.viewMode === 'docs' ? '0' : '5rem',
     transition: 'background-color 0.2s ease, color 0.2s ease',
+    boxSizing: 'border-box',
   };
 
   return (

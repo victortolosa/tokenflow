@@ -1,0 +1,69 @@
+.typography-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 800px;
+}
+
+.typography-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.typography-label {
+    font-size: 0.75rem;
+    font-family: monospace;
+    color: #888;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+h1 {
+    font-family: var(--h1-font-family, serif);
+    font-size: var(--h1-desktop-font-size, 4rem);
+    line-height: var(--h1-desktop-font-line-height, 1.1);
+    font-weight: var(--h1-desktop-font-weight, 500);
+    margin: 0;
+}
+
+h2 {
+    font-family: var(--h2-font-family, serif);
+    font-size: var(--h2-desktop-font-size, 3rem);
+    line-height: var(--h2-desktop-font-line-height, 1.1);
+    font-weight: var(--h2-desktop-font-weight, 500);
+    margin: 0;
+}
+
+h3 {
+    font-family: var(--h3-font-family, serif);
+    font-size: var(--h3-desktop-font-size, 2rem);
+    line-height: var(--h3-desktop-font-line-height, 1.2);
+    font-weight: var(--h3-desktop-font-weight, 600);
+    margin: 0;
+}
+
+h4 {
+    font-family: var(--h4-font-family, serif);
+    font-size: var(--h4-desktop-font-size, 1.5rem);
+    line-height: var(--h4-desktop-font-line-height, 1.2);
+    font-weight: var(--h4-desktop-font-weight, 600);
+    margin: 0;
+}
+
+h5 {
+    font-family: var(--h5-font-family, serif);
+    font-size: var(--h5-desktop-font-size, 1.25rem);
+    line-height: var(--h5-desktop-font-line-height, 1.2);
+    font-weight: var(--h5-desktop-font-weight, 600);
+    margin: 0;
+}
+
+h6 {
+    font-family: var(--h6-font-family, serif);
+    font-size: var(--h6-desktop-font-size, 1.125rem);
+    line-height: var(--h6-desktop-font-line-height, 1.2);
+    font-weight: var(--h6-desktop-font-weight, 600);
+    margin: 0;
+}

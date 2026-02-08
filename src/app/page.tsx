@@ -81,7 +81,7 @@ export default function Home() {
           <div className="flex-1 bg-white border-l border-r border-b border-gray-200 rounded-b-xl overflow-hidden shadow-sm relative">
             <iframe
               id="storybook-preview"
-              src="http://localhost:6006/iframe.html?id=example-button--primary&viewMode=story"
+              src="http://localhost:6006/iframe.html?id=components-button--default&viewMode=story"
               className="w-full h-full absolute inset-0"
               title="Storybook Preview"
             />
