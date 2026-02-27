@@ -35,24 +35,22 @@ type Story = StoryObj<typeof meta>;
  * to see how it changes across different modes.
  */
 export const Default: Story = {
-  parameters: {
-    layout: 'fullscreen',
-  },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          minHeight: 'calc(100vh - 200px)',
-          padding: '100px 0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  render: (args) => (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '16px',
+        flexWrap: 'nowrap',
+        overflowX: 'auto',
+        padding: '24px',
+        width: '100%',
+      }}
+    >
+      <Button {...args} variant="primary" />
+      <Button {...args} variant="secondary" />
+      <Button {...args} variant="flat" />
+    </div>
+  ),
 };

@@ -2,32 +2,7 @@
 
 import { useMemo } from 'react';
 import { useTokenStore } from '@/store/useTokenStore';
-
-const isHexColor = (value: string) => /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value);
-
-const formatShadow = (shadow: any): string => {
-  if (!shadow) return '';
-  if (Array.isArray(shadow)) {
-    return shadow.map(formatShadow).filter(Boolean).join(', ');
-  }
-  if (typeof shadow === 'string') return shadow;
-  if (typeof shadow === 'object') {
-    const { x = '0px', y = '0px', blur = '0px', spread = '0px', color = 'rgba(0, 0, 0, 0)' } = shadow;
-    return `${x} ${y} ${blur} ${spread} ${color}`;
-  }
-  return String(shadow);
-};
-
-const toDisplayValue = (token: any): string => {
-  if (!token) return '';
-  if (token.type === 'boxShadow') {
-    return formatShadow(token.value);
-  }
-  if (typeof token.value === 'string') return token.value;
-  if (token.value === null || token.value === undefined) return '';
-  if (typeof token.value === 'object') return JSON.stringify(token.value);
-  return String(token.value);
-};
+import { toCssValue, isHexColor } from '@/utils/token-format';
 
 const formatLabel = (tokenKey: string) => tokenKey.replace(/^--button-/, '').replace(/^--/, '');
 
@@ -38,7 +13,9 @@ export function ButtonTokenEditor() {
     const groupKey = resolvedTokens?.Button ? 'Button' : resolvedTokens?.button ? 'button' : null;
     const group = groupKey ? resolvedTokens[groupKey] : null;
     const entries = group && typeof group === 'object'
-      ? Object.entries(group).filter(([, token]) => token && typeof token === 'object' && 'value' in token)
+      ? Object.entries(group as Record<string, unknown>).filter(
+          ([, token]) => token && typeof token === 'object' && 'value' in (token as Record<string, unknown>)
+        )
       : [];
     return { groupKey, entries };
   }, [resolvedTokens]);
@@ -70,8 +47,9 @@ export function ButtonTokenEditor() {
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
       {entries.map(([key, token]) => {
-        const value = toDisplayValue(token);
-        const showColor = token.type === 'color' && isHexColor(value);
+        const tokenObj = token as Record<string, unknown>;
+        const value = toCssValue(tokenObj);
+        const showColor = tokenObj.type === 'color' && isHexColor(value);
         const label = formatLabel(key);
 
         const handleChange = (nextValue: string) => {

@@ -1,4 +1,4 @@
-export function deepMerge(target: any, source: any): any {
+export function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
     if (typeof target !== 'object' || target === null) {
         return source;
     }
@@ -9,39 +9,49 @@ export function deepMerge(target: any, source: any): any {
     const output = { ...target };
 
     Object.keys(source).forEach(key => {
-        if (typeof source[key] === 'object' && source[key] !== null) {
+        if (typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key])) {
             if (!(key in target)) {
-                Object.assign(output, { [key]: source[key] });
+                output[key] = source[key];
             } else {
-                output[key] = deepMerge(target[key], source[key]);
+                output[key] = deepMerge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
             }
         } else {
-            Object.assign(output, { [key]: source[key] });
+            output[key] = source[key];
         }
     });
 
     return output;
 }
 
-export async function mergeTokenFiles(files: File[]): Promise<any> {
-    const jsonFiles = files.filter(f => f.name.endsWith('.json') && f.name !== '$metadata.json');
-    let combinedTokens = {};
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+export interface MergeResult {
+    tokens: Record<string, unknown>;
+    skippedFiles: string[];
+}
+
+export async function mergeTokenFiles(files: File[]): Promise<MergeResult> {
+    const jsonFiles = files.filter(
+        (f) => f.name.endsWith('.json') && f.name !== '$metadata.json' && f.name !== '$themes.json'
+    );
+    let combinedTokens: Record<string, unknown> = {};
+    const skippedFiles: string[] = [];
 
     for (const file of jsonFiles) {
+        if (file.size > MAX_FILE_SIZE) {
+            skippedFiles.push(`${file.name} (exceeds ${MAX_FILE_SIZE / 1024 / 1024} MB limit)`);
+            continue;
+        }
+
         try {
             const text = await file.text();
             const json = JSON.parse(text);
-            // If it's a "Split by top-level" export, the file name usually indicates the top-level key?
-            // Actually, standard Tokens Studio multi-file export usually contains the top-level object *inside* the file, 
-            // or the file content IS the partial object.
-            // E.g. global.json -> { "color": { ... } }
-            // So deep merging them all together should work.
-
             combinedTokens = deepMerge(combinedTokens, json);
         } catch (e) {
-            console.warn(`Failed to parse ${file.name}`, e);
+            const detail = e instanceof Error ? e.message : String(e);
+            skippedFiles.push(`${file.name} (${detail})`);
         }
     }
 
-    return combinedTokens;
+    return { tokens: combinedTokens, skippedFiles };
 }

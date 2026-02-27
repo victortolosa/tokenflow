@@ -3,23 +3,25 @@ import { useTokenStore } from '@/store/useTokenStore';
 import { mergeTokenFiles } from '@/utils/file-merge';
 import { Upload, FolderInput } from 'lucide-react';
 
+const MAX_SINGLE_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
 export function TokenUploader() {
     const { rawTokens, applyOverrideTokens, isLoadingTokens } = useTokenStore();
     const [input, setInput] = useState(rawTokens);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        setInput(rawTokens);
+        setInput((current) => (current === rawTokens ? current : rawTokens));
     }, [rawTokens]);
 
-    const processTokens = (tokens: any) => {
+    const processTokens = (tokens: Record<string, unknown>) => {
         const jsonString = JSON.stringify(tokens, null, 2);
         setInput(jsonString);
         setError(null);
 
-        applyOverrideTokens(tokens).catch(err => {
-            console.error(err);
-            setError('Failed to apply token overrides');
+        applyOverrideTokens(tokens).catch((err: unknown) => {
+            const detail = err instanceof Error ? err.message : String(err);
+            setError(`Failed to apply token overrides: ${detail}`);
         });
     };
 
@@ -27,8 +29,8 @@ export function TokenUploader() {
         try {
             const parsed = JSON.parse(input);
             processTokens(parsed);
-        } catch (e) {
-            setError('Invalid JSON format');
+        } catch {
+            setError('Invalid JSON format. Please check your input and try again.');
         }
     };
 
@@ -38,14 +40,27 @@ export function TokenUploader() {
 
         try {
             if (files.length === 1 && files[0].name.endsWith('.json')) {
-                const text = await files[0].text();
+                const file = files[0];
+                if (file.size > MAX_SINGLE_FILE_SIZE) {
+                    setError(`File "${file.name}" exceeds the ${MAX_SINGLE_FILE_SIZE / 1024 / 1024} MB size limit.`);
+                    return;
+                }
+                const text = await file.text();
                 processTokens(JSON.parse(text));
             } else {
-                const merged = await mergeTokenFiles(files);
-                processTokens(merged);
+                const { tokens, skippedFiles } = await mergeTokenFiles(files);
+                if (skippedFiles.length > 0) {
+                    setError(`Some files were skipped:\n${skippedFiles.join('\n')}`);
+                }
+                if (Object.keys(tokens).length === 0) {
+                    setError('No valid token data found in the uploaded files.');
+                    return;
+                }
+                processTokens(tokens);
             }
-        } catch (err) {
-            setError('Failed to parse uploaded file(s)');
+        } catch (err: unknown) {
+            const detail = err instanceof Error ? err.message : String(err);
+            setError(`Failed to parse uploaded file(s): ${detail}`);
         }
     };
 
@@ -83,7 +98,7 @@ export function TokenUploader() {
                 />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-red-500 text-sm whitespace-pre-line">{error}</p>}
 
             <button
                 onClick={handleApply}

@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { useTokenStore } from '@/store/useTokenStore';
 import { mergeTokenFiles } from '@/utils/file-merge';
 
+const MAX_SINGLE_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
 interface ImportModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -17,21 +19,22 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        setInput(rawTokens);
-    }, [rawTokens]);
+        if (!open) return;
+        setInput((current) => (current === rawTokens ? current : rawTokens));
+    }, [rawTokens, open]);
 
-    const processTokens = (tokens: any) => {
+    const processTokens = (tokens: Record<string, unknown>) => {
         const jsonString = JSON.stringify(tokens, null, 2);
         setInput(jsonString);
         setError(null);
 
         applyOverrideTokens(tokens)
             .then(() => {
-                onOpenChange(false); // Close modal on success
+                onOpenChange(false);
             })
-            .catch((err) => {
-                console.error(err);
-                setError('Failed to apply token overrides');
+            .catch((err: unknown) => {
+                const detail = err instanceof Error ? err.message : String(err);
+                setError(`Failed to apply token overrides: ${detail}`);
             });
     };
 
@@ -39,8 +42,8 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
         try {
             const parsed = JSON.parse(input);
             processTokens(parsed);
-        } catch (e) {
-            setError('Invalid JSON format');
+        } catch {
+            setError('Invalid JSON format. Please check your input and try again.');
         }
     };
 
@@ -50,14 +53,27 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
 
         try {
             if (files.length === 1 && files[0].name.endsWith('.json')) {
-                const text = await files[0].text();
+                const file = files[0];
+                if (file.size > MAX_SINGLE_FILE_SIZE) {
+                    setError(`File "${file.name}" exceeds the ${MAX_SINGLE_FILE_SIZE / 1024 / 1024} MB size limit.`);
+                    return;
+                }
+                const text = await file.text();
                 processTokens(JSON.parse(text));
             } else {
-                const merged = await mergeTokenFiles(files);
-                processTokens(merged);
+                const { tokens, skippedFiles } = await mergeTokenFiles(files);
+                if (skippedFiles.length > 0) {
+                    setError(`Some files were skipped:\n${skippedFiles.join('\n')}`);
+                }
+                if (Object.keys(tokens).length === 0) {
+                    setError('No valid token data found in the uploaded files.');
+                    return;
+                }
+                processTokens(tokens);
             }
-        } catch (err) {
-            setError('Failed to parse uploaded file(s)');
+        } catch (err: unknown) {
+            const detail = err instanceof Error ? err.message : String(err);
+            setError(`Failed to parse uploaded file(s): ${detail}`);
         }
     };
 
@@ -109,7 +125,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
                         />
                     </div>
 
-                    {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+                    {error && <p className="text-red-500 text-sm mb-4 whitespace-pre-line">{error}</p>}
 
                     <button
                         onClick={handleApply}

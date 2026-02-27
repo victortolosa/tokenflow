@@ -17,23 +17,35 @@ const config: StorybookConfig = {
   ],
   async viteFinal(config) {
     const existingHeaders = config.server?.headers ?? {};
-    const nextOrigin =
-      process.env.NEXT_PUBLIC_APP_ORIGIN ??
-      process.env.NEXT_PUBLIC_STORYBOOK_EMBED_ORIGIN ??
-      'http://localhost:3000';
-    const allowedHost =
-      process.env.NEXT_PUBLIC_STORYBOOK_ALLOWED_HOST ??
-      process.env.STORYBOOK_ALLOWED_HOST ??
-      'localhost';
+    const nextOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'http://localhost:3000';
+    const nextImageDefine = {
+      'process.env.__NEXT_IMAGE_OPTS': 'undefined'
+    };
 
     config.server = {
       ...config.server,
-      allowedHosts: allowedHost === 'all' ? 'all' : [allowedHost],
+      allowedHosts: [new URL(nextOrigin).hostname],
       headers: {
         ...existingHeaders,
-        'Access-Control-Allow-Origin': '*',
-        'X-Frame-Options': 'ALLOWALL',
+        'Access-Control-Allow-Origin': nextOrigin,
+        'X-Frame-Options': `ALLOW-FROM ${nextOrigin}`,
         'Content-Security-Policy': `frame-ancestors 'self' ${nextOrigin}`
+      }
+    };
+
+    config.define = {
+      ...config.define,
+      ...nextImageDefine
+    };
+
+    config.optimizeDeps = {
+      ...config.optimizeDeps,
+      esbuildOptions: {
+        ...config.optimizeDeps?.esbuildOptions,
+        define: {
+          ...config.optimizeDeps?.esbuildOptions?.define,
+          ...nextImageDefine
+        }
       }
     };
 

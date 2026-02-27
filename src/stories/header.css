@@ -1,32 +1,149 @@
-.storybook-header {
+/* ============================================================
+   Header — tokens from var(--header/*), var(--root/*), etc.
+   ============================================================ */
+
+.header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 15px 20px;
-  font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  justify-content: space-between;
+  background: var(--header/--global-header-bg-color, white);
+  border-bottom: var(--root/--border-width-xs, 1px) solid rgba(0, 0, 0, 0.1);
+  font-family: var(--root/--font-family, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif);
+  box-sizing: border-box;
 }
 
-.storybook-header svg {
-  display: inline-block;
-  vertical-align: top;
+/* Desktop */
+.header--desktop {
+  padding: 0 var(--root/--spacing-m, 16px);
+  height: 64px;
+  gap: var(--root/--spacing-m, 16px);
 }
 
-.storybook-header h1 {
-  display: inline-block;
-  vertical-align: top;
-  margin: 6px 0 6px 10px;
+/* Mobile */
+.header--mobile {
+  padding: 0 20px;
+  height: 66px;
+  position: relative;
+}
+
+/* ── Logo section ─────────────────────────────────────────── */
+
+.header__logo-section {
+  display: flex;
+  align-items: center;
+  gap: var(--root/--spacing-xs, 8px);
+  flex-shrink: 0;
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header__logo--centered {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.header__page-name {
+  font-size: var(--root/--text-desktop-font-size, 18px);
   font-weight: 700;
-  font-size: 20px;
-  line-height: 1;
+  color: var(--icon/--icon-color, black);
+  white-space: nowrap;
 }
 
-.storybook-header button + button {
-  margin-left: 10px;
+/* ── Icon buttons (waffle / hamburger) ────────────────────── */
+
+.header__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--icon/--icon-color, black);
+  flex-shrink: 0;
 }
 
-.storybook-header .welcome {
-  margin-right: 10px;
-  color: #333;
-  font-size: 14px;
+/* ── Navigation ───────────────────────────────────────────── */
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+
+.header__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px var(--root/--spacing-xs, 8px);
+  font-size: var(--root/--action-desktop-font-size, 16px);
+  line-height: var(--root/--action-desktop-font-line-height, 24px);
+  letter-spacing: var(--root/--action-desktop-font-letter-spacing, 0px);
+  color: var(--icon/--icon-color, black);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.header__nav-item--active {
+  border-bottom-color: var(--button/--button-primary-bg-color, #fffc00);
+  font-weight: 600;
+}
+
+.header__nav-chevron {
+  display: flex;
+  align-items: center;
+  color: var(--icon/--icon-color, black);
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--root/--spacing-xs, 8px);
+  flex-shrink: 0;
+}
+
+/* Flat CTA (mobile) */
+.header__cta-flat {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--root/--font-family, 'Nunito Sans', sans-serif);
+  font-size: var(--root/--action-desktop-font-size, 16px);
+  line-height: var(--root/--action-desktop-font-line-height, 24px);
+  letter-spacing: var(--root/--action-desktop-font-letter-spacing, 0px);
+  color: var(--button/--button-flat-fg-color, black);
+  padding: 12px 0;
+}
+
+/* Search button */
+.header__search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: var(--root/--border-width-xs, 1px) solid var(--icon/--icon-color, black);
+  border-radius: 100px;
+  background: none;
+  cursor: pointer;
+  color: var(--icon/--icon-color, black);
+  flex-shrink: 0;
+}
+
+.header__search-btn:hover {
+  opacity: 0.8;
 }

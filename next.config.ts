@@ -1,11 +1,6 @@
 import type { NextConfig } from "next";
 
 const storybookUrl = process.env.STORYBOOK_URL ?? "http://localhost:6006";
-const allowedDevOriginsEnv = process.env.NEXT_PUBLIC_ALLOWED_DEV_ORIGINS ?? "";
-const allowedDevOrigins = allowedDevOriginsEnv
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
 
 const storybookProxyPaths = [
   "/storybook/:path*",
@@ -25,7 +20,6 @@ const storybookProxyPaths = [
 ];
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins,
   async rewrites() {
     return storybookProxyPaths.map((source) => {
       const destination = source.startsWith("/storybook/")

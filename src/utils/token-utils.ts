@@ -5,7 +5,7 @@
  */
 
 export type TokenValue = {
-    value: string | number | Record<string, any>;
+    value: string | number | Record<string, unknown>;
     type: string;
     description?: string;
     x?: string;
@@ -21,11 +21,12 @@ export async function fetchTokens(path: string): Promise<TokenSet> {
     try {
         const response = await fetch(path);
         if (!response.ok) {
-            throw new Error(`Failed to fetch tokens at ${path}`);
+            throw new Error(`HTTP ${response.status} fetching ${path}`);
         }
         return await response.json();
     } catch (error) {
-        console.error('Error fetching tokens:', error);
+        const detail = error instanceof Error ? error.message : String(error);
+        console.error(`[fetchTokens] Failed to load "${path}": ${detail}`);
         return {};
     }
 }
@@ -34,8 +35,7 @@ export async function fetchTokens(path: string): Promise<TokenSet> {
  * Resolves a token reference path like "Neutral.--neutral-v700" to its value.
  * Handles nested paths of any depth.
  */
-function resolveReference(pathString: string, allTokens: any, visited: Set<string> = new Set()): any {
-    // Prevent infinite loops
+function resolveReference(pathString: string, allTokens: Record<string, unknown>, visited: Set<string> = new Set()): unknown {
     if (visited.has(pathString)) {
         console.warn(`Circular reference detected: ${pathString}`);
         return null;
@@ -43,21 +43,19 @@ function resolveReference(pathString: string, allTokens: any, visited: Set<strin
     visited.add(pathString);
 
     const path = pathString.split('.');
-    let current = allTokens;
+    let current: unknown = allTokens;
 
     for (const part of path) {
-        if (current && typeof current === 'object' && part in current) {
-            current = current[part];
+        if (current && typeof current === 'object' && part in (current as Record<string, unknown>)) {
+            current = (current as Record<string, unknown>)[part];
         } else {
-            console.warn(`[resolveReference] Failed at path "${pathString}", part "${part}" not found. Available:`,
-                current ? Object.keys(current).slice(0, 5) : 'null');
+            console.warn(`[resolveReference] Failed at path "${pathString}", part "${part}" not found.`);
             return null;
         }
     }
 
-    // If we found a token object with a value property, resolve that value
-    if (current && typeof current === 'object' && 'value' in current) {
-        return resolveTokenValue(current.value, allTokens, visited);
+    if (current && typeof current === 'object' && 'value' in (current as Record<string, unknown>)) {
+        return resolveTokenValue((current as Record<string, unknown>).value, allTokens, visited);
     }
 
     return current;
@@ -67,20 +65,18 @@ function resolveReference(pathString: string, allTokens: any, visited: Set<strin
  * Resolves a token value that might be a reference (e.g., "{Palette.Blue.v50}")
  * to its actual value (e.g., "#61C9FF").
  */
-export function resolveTokenValue(value: any, allTokens: any, visited: Set<string> = new Set()): any {
+export function resolveTokenValue(value: unknown, allTokens: Record<string, unknown>, visited: Set<string> = new Set()): unknown {
     if (typeof value !== 'string') {
-        // If it's an object (like a shadow definition), resolve its properties
         if (typeof value === 'object' && value !== null) {
-            const resolvedObject: any = {};
-            for (const key in value) {
-                resolvedObject[key] = resolveTokenValue(value[key], allTokens, new Set(visited));
+            const resolvedObject: Record<string, unknown> = {};
+            for (const key in (value as Record<string, unknown>)) {
+                resolvedObject[key] = resolveTokenValue((value as Record<string, unknown>)[key], allTokens, new Set(visited));
             }
             return resolvedObject;
         }
         return value;
     }
 
-    // Check if the string contains any references like {Group.SubGroup.Token}
     const referenceRegex = /\{([^}]+)\}/g;
     const matches = Array.from(value.matchAll(referenceRegex));
 
@@ -92,7 +88,7 @@ export function resolveTokenValue(value: any, allTokens: any, visited: Set<strin
     if (matches.length === 1 && matches[0][0] === value) {
         const resolved = resolveReference(matches[0][1], allTokens, visited);
         if (resolved === null) {
-            return value; // Return original if resolution failed
+            return value;
         }
         return resolved;
     }
@@ -111,33 +107,31 @@ export function resolveTokenValue(value: any, allTokens: any, visited: Set<strin
  * Flattens a nested token object into a list of tokens with resolved values.
  */
 export function flattenTokens(
-    tokens: any,
-    allTokens: any,
+    tokens: Record<string, unknown>,
+    allTokens: Record<string, unknown>,
     groupName: string = ''
-): Array<{ name: string; value: any; type: string; originalValue: any; description?: string }> {
-    let flattened: any[] = [];
+): Array<{ name: string; value: unknown; type: string; originalValue: unknown; description?: string }> {
+    const flattened: Array<{ name: string; value: unknown; type: string; originalValue: unknown; description?: string }> = [];
 
     for (const key in tokens) {
         const token = tokens[key];
 
         if (typeof token === 'object' && token !== null) {
-            if ('value' in token && 'type' in token) {
-                // It's a token definition
+            const tokenObj = token as Record<string, unknown>;
+            if ('value' in tokenObj && 'type' in tokenObj) {
                 const name = groupName ? `${groupName}.${key}` : key;
                 flattened.push({
                     name,
-                    value: resolveTokenValue(token.value, allTokens),
-                    originalValue: token.value,
-                    type: token.type,
-                    description: token.description,
+                    value: resolveTokenValue(tokenObj.value, allTokens),
+                    originalValue: tokenObj.value,
+                    type: tokenObj.type as string,
+                    description: tokenObj.description as string | undefined,
                 });
             } else {
-                // It's a group - recurse
                 const newGroupName = groupName ? `${groupName}.${key}` : key;
-                flattened = [
-                    ...flattened,
-                    ...flattenTokens(token, allTokens, newGroupName)
-                ];
+                flattened.push(
+                    ...flattenTokens(tokenObj as Record<string, unknown>, allTokens, newGroupName)
+                );
             }
         }
     }
@@ -145,22 +139,22 @@ export function flattenTokens(
     return flattened;
 }
 
-function isObject(item: any) {
-    return (item && typeof item === 'object' && !Array.isArray(item));
+function isObject(item: unknown): item is Record<string, unknown> {
+    return (typeof item === 'object' && item !== null && !Array.isArray(item));
 }
 
-export function deepMerge(target: any, source: any): any {
+export function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
     const output = { ...target };
     if (isObject(target) && isObject(source)) {
         Object.keys(source).forEach(key => {
             if (isObject(source[key])) {
                 if (!(key in target)) {
-                    Object.assign(output, { [key]: source[key] });
+                    output[key] = source[key];
                 } else {
-                    output[key] = deepMerge(target[key], source[key]);
+                    output[key] = deepMerge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
                 }
             } else {
-                Object.assign(output, { [key]: source[key] });
+                output[key] = source[key];
             }
         });
     }

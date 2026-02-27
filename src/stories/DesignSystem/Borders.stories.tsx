@@ -2,7 +2,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useEffect, useState } from 'react';
 import { TokenGrid } from '../../components/TokenGrid';
-import { fetchTokens, flattenTokens } from '../../utils/token-utils';
+import { fetchTokens, flattenTokens, deepMerge } from '../../utils/token-utils';
 
 const meta: Meta = {
     title: 'Design System/Borders',
@@ -22,7 +22,9 @@ export const Radius: StoryObj = {
         useEffect(() => {
             async function loadTokens() {
                 const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
-                const radius = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'borderRadius');
+                const primaryTokens = await fetchTokens('/tokens/Snap%20Motif/Primary.json');
+                const merged = deepMerge(globalTokens, primaryTokens);
+                const radius = flattenTokens(merged, merged).filter(t => t.type === 'borderRadius');
                 setTokens(radius);
                 setLoading(false);
             }
@@ -48,7 +50,9 @@ export const Width: StoryObj = {
         useEffect(() => {
             async function loadTokens() {
                 const globalTokens = await fetchTokens('/tokens/Snap%20Motif/Global.json');
-                const width = flattenTokens(globalTokens, globalTokens).filter(t => t.type === 'borderWidth');
+                const primaryTokens = await fetchTokens('/tokens/Snap%20Motif/Primary.json');
+                const merged = deepMerge(globalTokens, primaryTokens);
+                const width = flattenTokens(merged, merged).filter(t => t.type === 'borderWidth');
                 setTokens(width);
                 setLoading(false);
             }

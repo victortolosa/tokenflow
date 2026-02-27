@@ -1,13 +1,9 @@
 import StyleDictionary from 'style-dictionary';
 
-// We need to use a custom parser because we're passing a JS object/string directly, 
-// not reading from a file system, and also to handle Tokens Studio format nuances if any.
-// However, SD v4 might be different. Let's try to stick to basic SD usage first.
-
-export async function resolveTokens(rawTokens: Record<string, any>) {
-    // Style Dictionary v4 usage
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function resolveTokens(rawTokens: Record<string, unknown>): Promise<Record<string, unknown>> {
     const sd = new StyleDictionary({
-        tokens: rawTokens,
+        tokens: rawTokens as any,
         platforms: {
             css: {
                 transformGroup: 'css',
@@ -15,6 +11,5 @@ export async function resolveTokens(rawTokens: Record<string, any>) {
         }
     });
 
-    const resolved = await sd.exportPlatform('css');
-    return resolved;
+    return await sd.exportPlatform('css') as Record<string, unknown>;
 }
